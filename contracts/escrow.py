@@ -26,13 +26,13 @@ class Escrow(sp.Contract):
     def confirmReceived(self):
         sp.verify (sp.sender == self.data.buyer.open_some())
         sp.send (self.data.buyer.open_some(), sp.mutez(self.data.price))
-        sp.send (self.data.seller.open_some(), sp.balance)
+        sp.send (self.data.seller.open_some(), sp.mutez(3 * self.data.price))
         self.resetContract()
     @sp.entry_point
     def refundBuyer(self):
         sp.verify (sp.sender == self.data.seller.open_some())
         sp.send (self.data.buyer.open_some(), sp.mutez(2 * self.data.price))
-        sp.send (self.data.seller.open_some(), sp.balance)
+        sp.send (self.data.seller.open_some(), sp.mutez(2 * self.data.price))
         self.resetContract()
         
     #clear out buyer and seller
