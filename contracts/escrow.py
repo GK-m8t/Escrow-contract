@@ -8,9 +8,9 @@ class Escrow(sp.Contract):
         #ensure seller hasn't already been set
         sp.verify (~self.data.seller.is_some())
         
-        #the seller sets the price and must send the price in tez as insurance
+        #the seller sets the price and must send the price in mutez as insurance
         self.data.price = params.price
-        sp.verify (sp.amount == sp.tez(self.data.price))
+        sp.verify (sp.amount == sp.mutez(self.data.price))
         self.data.seller = sp.some(sp.sender)
     @sp.entry_point
     def setBuyer(self):
@@ -19,19 +19,19 @@ class Escrow(sp.Contract):
         #ensure buyer hasnt already been set
         sp.verify (~self.data.buyer.is_some())
         
-        sp.verify (sp.amount == sp.tez(self.data.price * 2))
+        sp.verify (sp.amount == sp.mutez(self.data.price * 2))
         self.data.buyer = sp.some(sp.sender)
         
     @sp.entry_point
     def confirmReceived(self):
         sp.verify (sp.sender == self.data.buyer.open_some())
-        sp.send (self.data.buyer.open_some(), sp.tez(self.data.price))
+        sp.send (self.data.buyer.open_some(), sp.mutez(self.data.price))
         sp.send (self.data.seller.open_some(), sp.balance)
         self.resetContract()
     @sp.entry_point
     def refundBuyer(self):
         sp.verify (sp.sender == self.data.seller.open_some())
-        sp.send (self.data.buyer.open_some(), sp.tez(2 * self.data.price))
+        sp.send (self.data.buyer.open_some(), sp.mutez(2 * self.data.price))
         sp.send (self.data.seller.open_some(), sp.balance)
         self.resetContract()
         
@@ -53,12 +53,11 @@ def testEscrow():
      #set the seller and price
     html += myContract
     
-    html += myContract.setSeller(price = 1).run(sender = seller, amount = sp.tez(1))
+    html += myContract.setSeller(price = 1).run(sender = seller, amount = sp.mutez(1))
      #set the buyer
-    html += myContract.setBuyer().run(sender = buyer, amount = sp.tez(2))
+    html += myContract.setBuyer().run(sender = buyer, amount = sp.mutez(2))
     # buyer confirms they received item 
     html += myContract.confirmReceived().run(sender = buyer)
   
      # seller decides to refund buyer
      # html += myContract.refundBuyer().run(sp.address(seller)).html()
-  
